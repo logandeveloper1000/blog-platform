@@ -1,5 +1,5 @@
 // src/components/PostList.js
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { db } from "../firebase";
 import {
   collection,
@@ -26,50 +26,50 @@ function PostList({ onlyUserPosts = false, overridePosts = null, setOverridePost
 
   const { user, setModal } = useContext(AuthContext);
 
-  const setFinalPosts = (data) => {
-    setPosts(data);
-    if (setOverridePosts) setOverridePosts(data);
-  };
+  const setFinalPosts = useCallback((data) => {
+  setPosts(data);
+  if (setOverridePosts) setOverridePosts(data);
+}, [setOverridePosts]);
 
-  const fetchPosts = async () => {
-    if (onlyUserPosts && !user) return;
+  const fetchPosts = useCallback(async () => {
+  if (onlyUserPosts && !user) return;
 
-    setLoading(true);
-    try {
-      let q;
+  setLoading(true);
+  try {
+    let q;
 
-      if (onlyUserPosts && user) {
-        q = query(
-          collection(db, "posts"),
-          where("authorId", "==", user.uid),
-          orderBy("createdAt", "desc")
-        );
-      } else {
-        q = query(
-          collection(db, "posts"),
-          where("public", "==", true),
-          where("approved", "==", true),
-          orderBy("createdAt", "desc")
-        );
-      }
-
-      const snapshot = await getDocs(q);
-
-      const fetchedPosts = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setFinalPosts(fetchedPosts);
-    } catch (err) {
-      setModal({
-        type: "error",
-        title: "Error Loading Posts",
-        message: err.message,
-      });
+    if (onlyUserPosts && user) {
+      q = query(
+        collection(db, "posts"),
+        where("authorId", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
+    } else {
+      q = query(
+        collection(db, "posts"),
+        where("public", "==", true),
+        where("approved", "==", true),
+        orderBy("createdAt", "desc")
+      );
     }
-    setLoading(false);
-  };
+
+    const snapshot = await getDocs(q);
+    const fetchedPosts = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setFinalPosts(fetchedPosts);
+  } catch (err) {
+    setModal({
+      type: "error",
+      title: "Error Loading Posts",
+      message: err.message,
+    });
+  }
+  setLoading(false);
+}, [onlyUserPosts, user, setModal, setFinalPosts]);
+
 
   const startEdit = (post) => {
     setEditingId(post.id);
@@ -138,7 +138,7 @@ function PostList({ onlyUserPosts = false, overridePosts = null, setOverridePost
       setPosts(overridePosts);
       setLoading(false);
     }
-  }, [overridePosts, user]);
+  }, [overridePosts, user, fetchPosts]);
 
   return (
     <>

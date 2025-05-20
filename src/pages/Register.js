@@ -14,8 +14,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      await createUserWithEmailAndPassword(auth, email, password);
 
       setModal({
         type: "success",
@@ -32,6 +31,7 @@ function Register() {
       });
     }
   };
+
 
   return (
         <div className="container auth-form">
