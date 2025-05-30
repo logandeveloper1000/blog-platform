@@ -6,7 +6,7 @@ A full-featured blog application built with React and Firebase, allowing authent
 ## Live Demo
 
 You can view the live app here:  
-https://logan-blog-platform.netlify.app/
+https://user-blog-platform.netlify.app/
 
 ## Technologies Used
 
